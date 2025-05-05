@@ -1,22 +1,37 @@
 name: kafka-cluster
 
+networks:
+  inner-cluster-communication:
+
 services:
   kafka:
     image: 'bitnami/kafka:latest'
+    networks:
+      - inner-cluster-communication
     environment:
       # Broker
       KAFKA_CFG_NODE_ID: 0
       KAFKA_CFG_PROCESS_ROLES: 'broker, controller'
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '0@kafka:9093'
       # Listeners
-      KAFKA_CFG_LISTENERS: 'BROKER://:9092,CONTROLLER://:9093'
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_CFG_LISTENERS: 'BROKER://:9092,CONTROLLER://:9093,INTERNAL://:9094'
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT'
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: 'BROKER'
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_CFG_ADVERTISED_LISTENERS: 'BROKER://kafka:9092'
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'BROKER://kafka:9092,INTERNAL://kafka:9094'
+      KAFKA_CLIENT_LISTENER_NAME: 'INTERNAL'
     healthcheck:
       test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server kafka:9092 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 10s
+  kafka-ui:
+    image: 'kafbat/kafka-ui:latest'
+    networks:
+      - inner-cluster-communication
+    ports:
+      - '8080:8080'
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+      
