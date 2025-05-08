@@ -3,11 +3,16 @@ name: kafka-cluster
 networks:
   inner-cluster-communication:
 
+volumes:
+  kafka-data:
+
 services:
   kafka:
     image: 'bitnami/kafka:latest'
     networks:
       - inner-cluster-communication
+    volumes:
+      - kafka-data:/bitnami/kafka      
     environment:
       # Broker
       KAFKA_CFG_NODE_ID: 0
