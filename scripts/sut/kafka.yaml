@@ -11,6 +11,8 @@ services:
     image: 'bitnami/kafka:latest'
     networks:
       - inner-cluster-communication
+    ports:
+      - '9095:9095'
     volumes:
       - kafka-data:/bitnami/kafka      
     environment:
@@ -19,11 +21,11 @@ services:
       KAFKA_CFG_PROCESS_ROLES: 'broker, controller'
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '0@kafka:9093'
       # Listeners
-      KAFKA_CFG_LISTENERS: 'BROKER://:9092,CONTROLLER://:9093,INTERNAL://:9094'
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT'
+      KAFKA_CFG_LISTENERS: 'BROKER://:9092,CONTROLLER://:9093,INTERNAL://:9094,EXTERNAL://:9095'
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: 'BROKER'
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_CFG_ADVERTISED_LISTENERS: 'BROKER://kafka:9092,INTERNAL://kafka:9094'
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'BROKER://kafka:9092,INTERNAL://kafka:9094,EXTERNAL://localhost:9095'
       KAFKA_CLIENT_LISTENER_NAME: 'INTERNAL'
     healthcheck:
       test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server kafka:9092 || exit 1"]
