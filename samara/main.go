@@ -72,13 +72,15 @@ func consume(brokers []string, topic string) {
 		}
 		defer pc.Close()
 
+		wg.Add(1)
 		go func(pc sarama.PartitionConsumer) {
+			defer wg.Done()
 			for msg := range pc.Messages() {
 				fmt.Printf("Consumed: %s\n", string(msg.Value))
 			}
 		}(pc)
 	}
 
-	// Wait for a while to consume messages
-	time.Sleep(15 * time.Second)
+	// Wait for all consumer goroutines to finish
+	wg.Wait()
 }
