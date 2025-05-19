@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -52,7 +53,6 @@ func produce(brokers []string, topic string) {
 		time.Sleep(1 * time.Second)
 	}
 }
-
 func consume(brokers []string, topic string) {
 	consumer, err := sarama.NewConsumer(brokers, nil)
 	if err != nil {
@@ -64,6 +64,8 @@ func consume(brokers []string, topic string) {
 	if err != nil {
 		log.Fatal("Partition error:", err)
 	}
+
+	var wg sync.WaitGroup
 
 	for _, partition := range partitions {
 		pc, err := consumer.ConsumePartition(topic, partition, sarama.OffsetOldest)
